@@ -201,7 +201,11 @@ module Supply
 
       rollout = (Supply.config[:rollout] || 0).to_f
       if rollout > 0 && rollout < 1
-        release.status = Supply::ReleaseStatus::IN_PROGRESS
+        if isValidRolloutReleaseStatus(Supply.config[:track_promote_release_status])
+          release.status = Supply.config[:track_promote_release_status]
+        else
+          release.status = Supply::ReleaseStatus::IN_PROGRESS
+        end
         release.user_fraction = rollout
       else
         release.status = Supply.config[:track_promote_release_status]
@@ -484,6 +488,10 @@ module Supply
         'patch'
       end
     end
+  end
+  
+  def isValidRolloutReleaseStatus(releaseStatus)
+    (releaseStatus == Supply::ReleaseStatus::IN_PROGRESS) || (releaseStatus == Supply::ReleaseStatus::HALTED)
   end
   # rubocop:enable Metrics/ClassLength
 end
